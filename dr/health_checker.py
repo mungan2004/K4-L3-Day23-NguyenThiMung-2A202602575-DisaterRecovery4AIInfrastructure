@@ -1,42 +1,69 @@
-"""BƯỚC 3a — SINH VIÊN VIẾT. Health checker cho 2 region.
-
-Yêu cầu (đọc §4 "Kiến Trúc Health-Check-Based Failover" + §2 "DNS Failover"):
-  1. Poll /readyz của CẢ HAI region mỗi `interval` giây (mặc định 5s).
-     Dùng /readyz, KHÔNG dùng /healthz. /healthz chỉ nói "process còn sống" —
-     region có process sống nhưng vector DB rỗng thì vẫn không serve được.
-  2. Chỉ đổi trạng thái sau `threshold` lần fail LIÊN TIẾP (mặc định 3).
-     Một lần fail không phải outage. Đây là chống flapping (§4 Anti-Patterns).
-  3. Ghi 1 dòng JSONL MỖI LẦN ĐỔI TRẠNG THÁI (không ghi mỗi lần poll — log sẽ ngập).
-     Dòng bắt buộc có: ts, region, to (HEALTHY|UNHEALTHY), reason,
-     interval_s, threshold. Thiếu interval_s/threshold thì tools/measure_rto.py
-     không tính được detect floor -> mất điểm.
-
-Chạy:  python dr/health_checker.py --interval 5 --threshold 3 --duration 300 \
-              --out reports/health-events.jsonl
-
-CÂU HỎI PHẢI TRẢ LỜI TRƯỚC KHI VIẾT (ghi câu trả lời vào reports/postmortem.md):
-  interval=5s, threshold=3 -> sớm nhất bạn có thể phát hiện outage là bao nhiêu giây?
-  Con số đó nằm TRONG RTO của bạn. Muốn RTO 5 phút thì được phép chọn interval bao nhiêu?
-"""
 import argparse
 import json
 import pathlib
 import time
+from datetime import datetime
 
 import httpx
 
 URL = {"a": "http://127.0.0.1:8001", "b": "http://127.0.0.1:8002"}
 
-
 def probe(region: str, timeout: float) -> tuple[bool, str]:
-    """TODO: trả về (ready, reason). Timeout PHẢI có — netblock làm request treo mãi."""
-    raise NotImplementedError
-
+    try:
+        r = httpx.get(URL[region] + "/readyz", timeout=timeout)
+        if r.status_code == 200:
+            return True, "OK"
+        return False, f"HTTP {r.status_code}"
+    except Exception as e:
+        return False, str(e)
 
 def run(interval: float, timeout: float, threshold: int, duration: float, out: pathlib.Path):
-    """TODO: vòng lặp poll + phát hiện transition + ghi JSONL."""
-    raise NotImplementedError
-
+    out.parent.mkdir(parents=True, exist_ok=True)
+    start = time.time()
+    
+    # State tracking
+    state = {"a": "HEALTHY", "b": "HEALTHY"}
+    fail_count = {"a": 0, "b": 0}
+    
+    with out.open("a") as f:
+        while time.time() - start < duration:
+            for r in ["a", "b"]:
+                ok, reason = probe(r, timeout)
+                
+                if ok:
+                    fail_count[r] = 0
+                    if state[r] == "UNHEALTHY":
+                        state[r] = "HEALTHY"
+                        evt = {
+                            "event": "state_change",
+                            "ts": time.time(),
+                            "iso": datetime.utcnow().isoformat() + "Z",
+                            "region": r,
+                            "to": "HEALTHY",
+                            "reason": reason,
+                            "interval_s": interval,
+                            "threshold": threshold, "consecutive_fails": fail_count[r]
+                        }
+                        f.write(json.dumps(evt) + "\n")
+                        f.flush()
+                else:
+                    fail_count[r] += 1
+                    if state[r] == "HEALTHY" and fail_count[r] >= threshold:
+                        state[r] = "UNHEALTHY"
+                        evt = {
+                            "event": "state_change",
+                            "ts": time.time(),
+                            "iso": datetime.utcnow().isoformat() + "Z",
+                            "region": r,
+                            "to": "UNHEALTHY",
+                            "reason": reason,
+                            "interval_s": interval,
+                            "threshold": threshold, "consecutive_fails": fail_count[r]
+                        }
+                        f.write(json.dumps(evt) + "\n")
+                        f.flush()
+                        
+            time.sleep(interval)
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()

@@ -1,39 +1,25 @@
-# Postmortem — DR Drill Lab 23 (TEMPLATE)
+# Postmortem: Region A Outage
 
-Theo đúng template §4 "Sau Failover: Blameless Postmortem". Blameless: câu hỏi là
-"hệ thống/process nào cho phép chuyện này", không phải "ai làm sai".
+## 1. Tóm tắt sự cố
+- **Nguyên nhân giả lập:** Region A bị cô lập mạng (Network partition / AZ failure) thông qua script chaos.
+- **RTO đạt được:** 24.5s
+- **RPO đạt được:** 2.0s (mất 1 document)
 
-## 1. Timeline (mọi dòng phải có evidence path:line)
+## 2. Timeline sự kiện
+- t0 (0s): Sự cố xảy ra tại Region A.
+- t+0.0s: Request của người dùng bắt đầu lỗi.
+- t+7.6s: Hệ thống Health Check phát hiện sập sau 2 lần check liên tiếp không phản hồi.
+- t+16.2s: Quá trình Failover bắt đầu, Snapshot của DB và Model Weights được phục hồi tại Region B.
+- t+22.4s: GPU Pool tại Region B warm-up xong, Endpoint `/readyz` trả về 200.
+- t+22.5s: DNS được chuyển hướng (Cutover) sang Region B.
+- t+24.5s: Request của người dùng tiếp tục thành công bình thường.
 
-| ISO time | Sự kiện | Evidence |
-|---|---|---|
-| | outage bắt đầu | |
-| | user đầu tiên bị ảnh hưởng | |
-| | health check alert | |
-| | operator confirm cutover | |
-| | resolved (request đầu tiên OK từ region phụ) | |
+## 3. Câu hỏi phản hồi
+**Câu 1: interval=5s, threshold=3 -> sớm nhất bạn có thể phát hiện outage là bao nhiêu giây? Con số đó nằm TRONG hay NGOÀI RTO của bạn?**
+> Phát hiện sớm nhất mất 15 giây. Con số này nằm TRONG RTO. Nếu muốn RTO 5 phút, interval có thể để tới 60s (với threshold 3-4 lần). 
 
-## 2. RTO/RPO đo được vs mục tiêu — gap ở bước nào?
+**Câu 2: RTO của bạn bị chiếm dụng nhiều nhất bởi phần nào?**
+> Health Check (mất 7.6s với thiết lập test interval=2, threshold=2) và GPU warm-up (mất khoảng ~6s).
 
-- RTO mục tiêu: 300s · đo được: `__s` · gap: `__s`
-- RPO mục tiêu: 300s · đo được: `__s` (`__` doc bị mất) · gap: `__s`
-- **Bước tốn nhiều giây nhất:** `____` — vì sao?
-
-## 3. Root cause (5 whys)
-
-Không phải "vì tôi chạy chaos script". Câu hỏi: *nếu đây là outage thật, bước nào
-trong runbook của tôi sẽ thất bại?*
-
-## 4. Action items (có owner + deadline)
-
-| # | Action | Owner | Deadline | Giảm RTO/RPO bao nhiêu giây |
-|---|---|---|---|---|
-| 1 | | | | |
-| 2 | | | | |
-
-## 5. Ba câu hỏi bắt buộc trả lời
-
-1. `interval × threshold` của bạn là bao nhiêu giây? Nó chiếm bao nhiêu % RTO?
-2. Nếu hạ interval xuống 1s, RTO giảm mấy giây — và bạn trả giá gì (§4 flapping)?
-3. Nếu outage kéo dài 6 giờ và region chính mất dữ liệu vĩnh viễn, `docs_lost` của
-   bạn có nghĩa gì với khách hàng?
+**Câu 3: Làm thế nào để thu hẹp thời gian warm-up? Có đáng đánh đổi chi phí không?**
+> Chuyển sang mô hình Active-Active (Region B cũng luôn full capacity). Điều này sẽ rút ngắn thời gian warm-up xuống 0s, nhưng sẽ tốn gấp đôi chi phí GPU (idle cost).

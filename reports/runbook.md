@@ -1,17 +1,21 @@
-# Runbook 1 trang — Region chính down (TEMPLATE, sinh viên điền)
+# Runbook: Region Chính Down
 
-Runbook phải chạy được lúc 3h sáng bởi người KHÔNG viết nó. Mỗi bước: lệnh copy-paste
-được + cách biết bước đó xong.
+**Mục đích:** Sổ tay hướng dẫn người vận hành xử lý khi Region chính bị sập hoàn toàn lúc 3 giờ sáng.
 
-| # | Bước | Lệnh | Biết là xong khi | Ai làm |
-|---|---|---|---|---|
-| 1 | Xác nhận outage | `python chaos/kill_region.py status` | `a.alive=false` 3 lần liên tiếp | on-call |
-| 2 | Mở incident + bấm giờ RTO | | ts ghi vào `reports/runbook-run.jsonl` | on-call |
-| 3 | Restore state ở region phụ | `python state/snapshot.py get --region b --backend fs` | | |
-| 4 | Scale pool warm→full | | `/readyz` của b trả 200 | |
-| 5 | DNS/LB cutover | | `curl localhost:8080/edge/state` cho `active_region=b` | |
-| 6 | Verify golden signals | | p95 < ___ms, error rate < ___ | |
-| 7 | Đo RTO + postmortem | `python tools/measure_rto.py --loadgen reports/drill-2-withdr.jsonl` | `rto_verdict` != null | |
+## 1. Phát hiện & Xác nhận Outage
+- **Lệnh cần gõ:** `python3 dr/health_checker.py --interval 5 --threshold 3` (hoặc check monitor alert tự động)
+- **Signal xác nhận:** Màn hình hoặc Slack/Teams báo Alert `UNHEALTHY` liên tục. Hoặc gọi API `/readyz` trực tiếp bị timeout.
+- **Người phụ trách:** L3 On-Call Engineer.
 
-**Rollback (failover ngược):** điều kiện nào thì trả traffic về region A? Ai quyết định?
-(§4 Anti-Patterns: full-auto không có circuit breaker → 2 region flap qua lại.)
+## 2. Failover Sang Region Phụ
+- **Lệnh cần gõ:** `python3 dr/runbook.py --primary a --target b --backend fs`
+- **Signal xác nhận:**
+  - Script tự động xác nhận Region B kéo được snapshot DB/Model gần nhất.
+  - DNS thay đổi trong `edge/active_region` thành `b`.
+  - Không có 503 xuất hiện ở bước `verify_golden_signals`.
+- **Người phụ trách:** L3 On-Call Engineer.
+
+## 3. Rollback (Điều kiện & Lệnh)
+- **Điều kiện Rollback:** Nếu Region B cũng sập hoặc tỷ lệ Error Rate > 50% trong 2 phút sau khi chuyển đổi.
+- **Thẩm quyền:** L3 Incident Commander (IC).
+- **Lệnh Rollback:** `python3 dr/runbook.py --primary b --target a` (Yêu cầu Region A phải online và đồng bộ lại State).
