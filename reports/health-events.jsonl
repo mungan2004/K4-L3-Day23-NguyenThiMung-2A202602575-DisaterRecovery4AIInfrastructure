@@ -1,3 +1,0 @@
-{"event": "state_change", "ts": 1791560140.845367, "iso": "2026-10-09T15:35:40.845368Z", "region": "b", "to": "UNHEALTHY", "reason": "HTTP 503", "interval_s": 2.0, "threshold": 2, "consecutive_fails": 2}
-{"event": "state_change", "ts": 1791560161.328046, "iso": "2026-10-09T15:36:01.328049Z", "region": "a", "to": "UNHEALTHY", "reason": "timed out", "interval_s": 2.0, "threshold": 2, "consecutive_fails": 2}
-{"event": "state_change", "ts": 1791560177.6354759, "iso": "2026-10-09T15:36:17.635476Z", "region": "b", "to": "HEALTHY", "reason": "OK", "interval_s": 2.0, "threshold": 2, "consecutive_fails": 0}

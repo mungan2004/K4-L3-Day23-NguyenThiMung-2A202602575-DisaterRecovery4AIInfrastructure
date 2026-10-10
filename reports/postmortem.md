@@ -2,8 +2,8 @@
 
 ## 1. Tóm tắt sự cố
 - **Nguyên nhân giả lập:** Region A bị cô lập mạng (Network partition / AZ failure) thông qua script chaos.
-- **RTO đạt được:** 24.5s
-- **RPO đạt được:** 2.0s (mất 1 document)
+- **RTO đạt được:** 15.0s
+- **RPO đạt được:** 22.02s (mất 11 document)
 
 ## 2. Timeline sự kiện
 - t0 (0s): Sự cố xảy ra tại Region A.
@@ -23,3 +23,9 @@
 
 **Câu 3: Làm thế nào để thu hẹp thời gian warm-up? Có đáng đánh đổi chi phí không?**
 > Chuyển sang mô hình Active-Active (Region B cũng luôn full capacity). Điều này sẽ rút ngắn thời gian warm-up xuống 0s, nhưng sẽ tốn gấp đôi chi phí GPU (idle cost).
+
+## 4. Gap Analysis & Action Items
+- **Gap:** Thời gian phát hiện sự cố (detection) và warm-up GPU còn tương đối dài, chiếm phần lớn RTO.
+- **Action Item:** 
+  - Xem xét tối ưu lại tham số interval/threshold của health check.
+  - Cân nhắc sử dụng kiến trúc multi-region active-active hoặc standby có sẵn pool (chấp nhận chi phí cao hơn) nếu có yêu cầu RTO khắt khe hơn.

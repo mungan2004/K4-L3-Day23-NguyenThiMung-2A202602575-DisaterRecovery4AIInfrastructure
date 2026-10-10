@@ -66,7 +66,7 @@ def failover(target: str, backend: str, wait: float) -> dict:
         
     if not ready:
         emit(step="4_wait_ready", success=False, error="timeout")
-        raise RuntimeError("Target region failed to become ready")
+        return {"ok": False, "error": "Target region failed to become ready"}
         
     emit(step="4_wait_ready", success=True)
 
@@ -75,6 +75,7 @@ def failover(target: str, backend: str, wait: float) -> dict:
     emit(step="5_dns_cutover", active_region=target)
 
     return {
+        "ok": True,
         "rpo_seconds": rpo_stats["rpo_seconds"],
         "docs_lost": rpo_stats["docs_lost"],
         "embed_model_version": meta.get("embed_model_version")
