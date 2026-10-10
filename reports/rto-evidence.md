@@ -21,7 +21,7 @@
 *(Lưu ý: Các mốc cụ thể lấy xấp xỉ theo jsonl)*
 
 ## Dữ liệu thất thoát (RPO)
-- RPO đo được lúc phục hồi: 22.02s
-- Số documents bị mất: 11
+- RPO đo được lúc phục hồi: 24.02s
+- Số documents bị mất: 12
 - Phiên bản Embed Model: `embed-model=vi-e5-base@v3`
 - Bằng chứng: `reports/failover-events.jsonl:2`

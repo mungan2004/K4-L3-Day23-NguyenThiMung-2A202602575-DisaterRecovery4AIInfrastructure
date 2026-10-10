@@ -3,7 +3,7 @@
 ## 1. Tóm tắt sự cố
 - **Nguyên nhân giả lập:** Region A bị cô lập mạng (Network partition / AZ failure) thông qua script chaos.
 - **RTO đạt được:** 15.0s
-- **RPO đạt được:** 22.02s (mất 11 document)
+- **RPO đạt được:** 24.02s (mất 12 document)
 
 ## 2. Timeline sự kiện
 - t0 (0s): Sự cố xảy ra tại Region A.
