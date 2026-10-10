@@ -1,9 +1,5 @@
-{"step": "1_verify_target", "state": {"region": "b", "pool_state": "warm", "weights": false, "count": 0, "latest_doc_ts": null, "ts": 1791648549.8487911}, "iso": "2026-10-10T16:09:09.849656Z", "ts": 1791648549.8496616}
-{"step": "2_restore_snapshot", "rpo_seconds": 24.02, "docs_lost": 12, "embed_model_version": "embed-model=vi-e5-base@v3", "iso": "2026-10-10T16:09:09.851299Z", "ts": 1791648549.851303}
-{"step": "3_scale_pool", "pool_state": "full", "iso": "2026-10-10T16:09:09.851426Z", "ts": 1791648549.8514287}
-{"step": "4_wait_ready", "success": true, "iso": "2026-10-10T16:09:16.056128Z", "ts": 1791648556.0561495}
-{"step": "5_dns_cutover", "active_region": "b", "iso": "2026-10-10T16:09:16.056365Z", "ts": 1791648556.0563676}
-{"step": "1_verify_target", "error": "mocked: target khong bao gio ready", "iso": "2026-10-10T16:13:08.969252Z", "ts": 1791648788.9692824}
-{"step": "2_restore_snapshot", "rpo_seconds": 120.12, "docs_lost": 60, "embed_model_version": "test", "iso": "2026-10-10T16:13:08.970725Z", "ts": 1791648788.970736}
-{"step": "3_scale_pool", "pool_state": "full", "iso": "2026-10-10T16:13:08.971154Z", "ts": 1791648788.9711626}
-{"step": "4_wait_ready", "success": false, "error": "timeout", "iso": "2026-10-10T16:13:09.971922Z", "ts": 1791648789.9719486}
+{"step": "1_verify_target", "state": {"region": "b", "pool_state": "warm", "weights": false, "count": 0, "latest_doc_ts": null, "ts": 1791649147.3508205}, "iso": "2026-10-10T16:19:07.352049Z", "ts": 1791649147.3520575}
+{"step": "2_restore_snapshot", "rpo_seconds": 4.0, "docs_lost": 2, "embed_model_version": "embed-model=vi-e5-base@v3", "iso": "2026-10-10T16:19:07.354808Z", "ts": 1791649147.3548179}
+{"step": "3_scale_pool", "pool_state": "full", "iso": "2026-10-10T16:19:07.355069Z", "ts": 1791649147.35509}
+{"step": "4_wait_ready", "success": true, "iso": "2026-10-10T16:19:13.609420Z", "ts": 1791649153.6094263}
+{"step": "5_dns_cutover", "active_region": "b", "iso": "2026-10-10T16:19:13.609636Z", "ts": 1791649153.6096394}
