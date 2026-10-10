@@ -1,3 +1,3 @@
-{"event": "state_change", "ts": 1791649132.1640985, "iso": "2026-10-10T16:18:52.164100Z", "region": "b", "to": "UNHEALTHY", "reason": "HTTP 503", "interval_s": 5.0, "threshold": 3, "consecutive_fails": 3}
-{"event": "state_change", "ts": 1791649152.430943, "iso": "2026-10-10T16:19:12.430944Z", "region": "a", "to": "UNHEALTHY", "reason": "[Errno 111] Connection refused", "interval_s": 5.0, "threshold": 3, "consecutive_fails": 3}
-{"event": "state_change", "ts": 1791649157.5294287, "iso": "2026-10-10T16:19:17.529429Z", "region": "b", "to": "HEALTHY", "reason": "OK", "interval_s": 5.0, "threshold": 3, "consecutive_fails": 0}
+{"event": "state_change", "ts": 1791649472.0041974, "iso": "2026-10-10T16:24:32.004199Z", "region": "b", "to": "UNHEALTHY", "reason": "HTTP 503", "interval_s": 3.0, "threshold": 3, "consecutive_fails": 3}
+{"event": "state_change", "ts": 1791649487.1730893, "iso": "2026-10-10T16:24:51.173090Z", "region": "a", "to": "UNHEALTHY", "reason": "[Errno 111] Connection refused", "interval_s": 3.0, "threshold": 3, "consecutive_fails": 3}
+{"event": "state_change", "ts": 1791649492.2722201, "iso": "2026-10-10T16:24:52.272221Z", "region": "b", "to": "HEALTHY", "reason": "OK", "interval_s": 3.0, "threshold": 3, "consecutive_fails": 0}
